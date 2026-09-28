@@ -1,0 +1,19 @@
+{
+  "name": "pict-provider-progress",
+  "version": "0.0.1",
+  "description": "Unified operation progress, event-logging and outcome reporting for the Retold ecosystem: a dependency-free core that turns a phased-operation state (Fable Operation / ProgressTracker shape) into a display model with per-phase and whole-operation percent + ETA, plus a Pict provider that polls and normalizes it for a UI.",
+  "main": "source/Pict-Provider-Progress.js",
+  "scripts": {
+    "test": "npx mocha -u tdd -R spec --exit test/*_tests.js",
+    "coverage": "npx nyc --reporter=text --reporter=html mocha -u tdd -R spec --exit test/*_tests.js"
+  },
+  "keywords": [ "pict", "retold", "progress", "operation", "eta" ],
+  "license": "MIT",
+  "dependencies": {
+    "fable-serviceproviderbase": "^3.0.19"
+  },
+  "devDependencies": {
+    "chai": "^4.3.0",
+    "mocha": "^10.0.0"
+  }
+}
