@@ -152,4 +152,34 @@ suite('pict-provider-progress: Operation-Progress-Core', () =>
 			Expect(tmpModel.Overall.Percent).to.equal(null);
 		});
 	});
+
+	suite('estimated totals (no phantom bar)', () =>
+	{
+		test('a running phase flagged EstimatedTotal shows no percent/ETA even when Total > 0', () =>
+		{
+			// A phase that started before its real total is known: Total may be a placeholder (e.g. Fable coerces <1 to
+			// 100). It must render as CountText + rate while Estimating -- never a hard percent driven by the estimate.
+			let tmpPhase = { Index: 1, Label: 'Import', Unit: 'items', StartedAt: T0, Total: 100, Completed: 30, EstimatedTotal: true };
+			let tmpModel = _core.projectPhase(tmpPhase, T0 + 10 * SEC);
+			Expect(tmpModel.KnownTotal).to.equal(false);
+			Expect(tmpModel.Percent).to.equal(null);
+			Expect(tmpModel.EtaSeconds).to.equal(-1);
+			Expect(tmpModel.EtaText).to.equal('unknown');
+			Expect(tmpModel.Estimating).to.equal(true);
+			Expect(tmpModel.CountText).to.equal('30 items');   // no "/ total" while estimating
+			Expect(tmpModel.RatePerSec).to.equal(3);            // rate still renders (30 over 10s)
+		});
+
+		test('once the total is firmed up (EstimatedTotal cleared) the same counts yield a real percent + ETA', () =>
+		{
+			let tmpPhase = { Index: 1, Label: 'Import', Unit: 'items', StartedAt: T0, Total: 300, Completed: 30, EstimatedTotal: false };
+			let tmpModel = _core.projectPhase(tmpPhase, T0 + 10 * SEC);
+			Expect(tmpModel.KnownTotal).to.equal(true);
+			Expect(tmpModel.Percent).to.equal(10);
+			Expect(tmpModel.CountText).to.equal('30 / 300 items');
+			// 30 over 10s -> 3/s; 270 remaining -> 90s.
+			Expect(tmpModel.EtaSeconds).to.equal(90);
+			Expect(tmpModel.Estimating).to.equal(false);
+		});
+	});
 });

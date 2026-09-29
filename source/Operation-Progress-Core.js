@@ -83,8 +83,13 @@ class OperationProgressCore
 
 		let tmpElapsedMs = tmpStarted ? Math.max(0, (tmpFinished || pNow) - tmpStarted) : 0;
 		let tmpRatePerSec = (tmpProcessed > 0 && tmpElapsedMs > 0) ? (tmpProcessed / (tmpElapsedMs / 1000)) : 0;
-		let tmpRemaining = (tmpTotal > 0) ? Math.max(0, tmpTotal - tmpProcessed) : null;
-		let tmpPercent = (tmpTotal > 0) ? Math.min(100, (tmpProcessed / tmpTotal) * 100) : null;
+		// Percent / remaining / ETA are driven ONLY by a KNOWN total (Total > 0 AND not flagged estimated). An estimated
+		// or not-yet-discovered total must not drive a hard bar -- it renders as CountText + rate while Estimating (this
+		// also defends against Fable coercing a <1 TotalCount to a phantom 100). A growing-but-exact total (setTotal /
+		// addTotal, which clear the estimated flag) is a known total, so its percent moves -- correctly non-monotonic as
+		// the total grows.
+		let tmpRemaining = tmpKnownTotal ? Math.max(0, tmpTotal - tmpProcessed) : null;
+		let tmpPercent = tmpKnownTotal ? Math.min(100, (tmpProcessed / tmpTotal) * 100) : null;
 
 		// ETA: done -> 0; running with a known total + rate -> remaining/rate; otherwise unknown (-1).
 		let tmpEtaSeconds = -1;
